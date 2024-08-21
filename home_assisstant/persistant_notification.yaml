@@ -1,0 +1,77 @@
+alias: App badge counter
+mode: queued
+max: 50
+trace:
+  stored_traces: 50
+trigger:
+  - id: notify
+    platform: event
+    event_type: call_service
+    event_data:
+      domain: notify
+      service: persistent_notification
+  - id: create
+    platform: event
+    event_type: call_service
+    event_data:
+      domain: persistent_notification
+      service: create
+  - id: dismiss
+    platform: event
+    event_type: call_service
+    event_data:
+      domain: persistent_notification
+      service: dismiss
+  - id: dismiss_all
+    platform: event
+    event_type: call_service
+    event_data:
+      domain: persistent_notification
+      service: dismiss_all
+condition: []
+action:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id:
+              - notify
+              - create
+        sequence:
+          - target:
+              entity_id: counter.app_badge
+            action: counter.increment
+            data: {}
+      - conditions:
+          - condition: trigger
+            id: dismiss
+        sequence:
+          - target:
+              entity_id: counter.app_badge
+            action: counter.decrement
+            data: {}
+      - conditions:
+          - condition: trigger
+            id: dismiss_all
+        sequence:
+          - data:
+              value: 0
+            target:
+              entity_id: counter.app_badge
+            action: counter.set_value
+  - if:
+      - condition: numeric_state
+        entity_id: counter.app_badge
+        below: 0
+    then:
+      - data:
+          value: 0
+        target:
+          entity_id: counter.app_badge
+        action: counter.set_value
+  - data:
+      message: ""
+      data:
+        push:
+          badge: "{{ states('counter.app_badge') }}"
+          sound: null
+    action: notify.mobile_app_de_i_van_ingrid
