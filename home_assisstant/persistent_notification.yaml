@@ -16,6 +16,10 @@ trigger:
     event_data:
       domain: persistent_notification
       service: create
+  - id: added
+    platform: persistent_notification
+    update_type:
+      - added
   - id: dismiss
     platform: event
     event_type: call_service
@@ -28,6 +32,11 @@ trigger:
     event_data:
       domain: persistent_notification
       service: dismiss_all
+  - id: removed
+    platform: persistent_notification
+    update_type:
+      - removed
+      
 condition: []
 action:
   - choose:
@@ -36,6 +45,7 @@ action:
             id:
               - notify
               - create
+              - added
         sequence:
           - target:
               entity_id: counter.app_badge
@@ -43,7 +53,9 @@ action:
             data: {}
       - conditions:
           - condition: trigger
-            id: dismiss
+            id: 
+              - dismiss
+              - removed
         sequence:
           - target:
               entity_id: counter.app_badge
